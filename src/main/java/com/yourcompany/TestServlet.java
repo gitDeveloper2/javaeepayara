@@ -1,10 +1,6 @@
 package com.yourcompany;
 
 import static com.yourcompany.HibernateUtil.closeSession;
-import static com.yourcompany.HibernateUtil.getSession;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -21,8 +17,7 @@ import org.hibernate.cfg.Configuration;
 @WebServlet("/test")
 public class TestServlet extends HttpServlet {
 
-    @PersistenceContext(unitName = "MSpaceSMSServicePUX")
-    private EntityManager entityManager;
+ 
 
 //    @Resource
 //    private UserTransaction userTransaction;
@@ -30,9 +25,9 @@ public class TestServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("text/html");
         List<Object> tables = new ArrayList<Object>();
+        Session session=null;
        try (SessionFactory factory = new Configuration().configure("hibernate.cfg.xml").addAnnotatedClass(PersonEntity.class).buildSessionFactory()) {
-            Session session = factory.openSession();
-
+            session = factory.openSession();
             // Create CriteriaBuilder
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
@@ -50,15 +45,16 @@ public class TestServlet extends HttpServlet {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }finally{
+           closeSession(session);
+       }
         
         
         
         response.getWriter().println("Tables Present: " + tables);
 
     }
-    
-   private static void savePerson(Session session, String name, int age) {
+    private static void savePerson(Session session, String name, int age) {
         try {
             session.beginTransaction();
 
@@ -76,4 +72,5 @@ public class TestServlet extends HttpServlet {
             e.printStackTrace();
         }
     }
+
 }
